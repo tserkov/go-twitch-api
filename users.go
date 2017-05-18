@@ -1,6 +1,7 @@
 package twitch
 
 import (
+	"fmt"
 	"net/url"
 )
 
@@ -27,6 +28,12 @@ type User struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
+type Follows struct {
+	CreatedAt string `json:"created_id"`
+	Notifications bool `json:"notifications"`
+	Channel Channel
+}
+
 func (u *UsersService) GetAccessToken (code string) (string, error) {
 	p := url.Values{}
 	p.Set("grant_type", "authorization_code")
@@ -51,7 +58,12 @@ func (u *UsersService) GetAuthenticated (accessToken string) (User, error) {
 
 	u.client.setAccessToken(accessToken)
 
-	err := u.client.request("GET", "user", nil, &userResponse)
+	err := u.client.request(
+		"GET",
+		"user",
+		nil,
+		&userResponse,
+	)
 
 	if err != nil {
 		return User{}, err
@@ -60,3 +72,38 @@ func (u *UsersService) GetAuthenticated (accessToken string) (User, error) {
 	return userResponse, nil
 }
 
+func (u *UsersService) GetByLogin (username string) (User, error) {
+	var userResponse User
+
+	err := u.client.request(
+		"GET",
+		"users",
+		url.Values{
+			"login": []string{username},
+		},
+		&userResponse,
+	)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return userResponse, nil
+}
+
+func (u *UsersService) GetFollowedChannelInfo (followerId string, channelId string) (Follows, error) {
+	var followsResponse Follows
+
+	err := u.client.request(
+		"GET",
+		fmt.Sprintf("users/%s/follows/channels/%s", followerId, channelId),
+		nil,
+		&followsResponse,
+	)
+
+	if err != nil {
+		return Follows{}, err
+	}
+
+	return followsResponse, nil
+}
