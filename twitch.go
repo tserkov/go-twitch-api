@@ -121,7 +121,6 @@ func (c *TwitchClient) request(method, endpoint string, params url.Values, v int
 	err = decoder.Decode(v)
 
 	if err != nil {
-		fmt.Println("%s", err)
 		return errors.New("invalid_response")
 	}
 

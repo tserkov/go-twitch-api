@@ -51,3 +51,23 @@ func TestUserFollowedChannels(t *testing.T) {
 		t.Errorf("Wrong channel returned: %s", userFollows.Channel.Name)
 	}
 }
+
+func TestUserIdFromUsername(t *testing.T) {
+	users, err := client.Users.GetByLogin("thestalkingwolf")
+
+	if err != nil {
+		t.Errorf("Failed to get user: %s", err)
+
+		return
+	}
+
+	if users.Total == 0 {
+		t.Errorf("No users returned for thestalkingwolf")
+
+		return
+	}
+
+	if users.Users[0].Id != "28456583" {
+		t.Errorf("Wrong user returned: %s", users.Users[0].Id)
+	}
+}

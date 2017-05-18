@@ -22,10 +22,16 @@ type User struct {
 	Email string `json:"email"`
 	IsEmailVerified bool `json:"email_verified"`
 	Logo string `json:"logo"`
+	Bio string `json:"bio"`
 	IsPartnered bool `json:"partnered"`
 	IsTwitterConnected bool `json:"twitter_connected"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
+}
+
+type Users struct {
+	Total int `json:"_total"`
+	Users []User `json:"users"`
 }
 
 type Follows struct {
@@ -72,8 +78,8 @@ func (u *UsersService) GetAuthenticated (accessToken string) (User, error) {
 	return userResponse, nil
 }
 
-func (u *UsersService) GetByLogin (username string) (User, error) {
-	var userResponse User
+func (u *UsersService) GetByLogin (username string) (Users, error) {
+	var usersResponse Users
 
 	err := u.client.request(
 		"GET",
@@ -81,14 +87,14 @@ func (u *UsersService) GetByLogin (username string) (User, error) {
 		url.Values{
 			"login": []string{username},
 		},
-		&userResponse,
+		&usersResponse,
 	)
 
 	if err != nil {
-		return User{}, err
+		return Users{}, err
 	}
 
-	return userResponse, nil
+	return usersResponse, nil
 }
 
 func (u *UsersService) GetFollowedChannelInfo (followerId string, channelId string) (Follows, error) {

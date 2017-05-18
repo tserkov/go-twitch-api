@@ -4,7 +4,7 @@ type Channel struct {
 	Id int `json:"_id"`
 	BroadcasterLanguage string `json:"broadcaster_language"`
 	CreatedAt string `json:"created_at"`
-	Displayname string `json:"display_name"`
+	DisplayName string `json:"display_name"`
 	FollowerCount int `json:"followers"`
 	Game string `json:"game"`
 	Language string `json:"language"`
