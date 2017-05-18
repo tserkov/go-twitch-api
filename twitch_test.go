@@ -13,44 +13,41 @@ type Configuration struct {
 	OauthRedirect string
 }
 
-var config Configuration
-var twitch twitch.TwitchClient
+var client *TwitchClient
 
-func TestMain(m *testing.M) {
+func init() {
+	config  := Configuration{}
+
 	file, _ := os.Open("config_test.json")
+
 	decoder := json.NewDecoder(file)
-	config  = Configuration{}
 	err     := decoder.Decode(&config)
 
 	if err != nil {
 		fmt.Println("Failed to load config: %s\n\n", err)
 
 		os.Exit(-1)
-	} else {
-		os.Exit(m.Run())
 	}
 
-	twitch := NewClient(config.ClientId, config.ClientSecret, config.OauthRedirect)
+	client = NewClient(config.ClientId, config.ClientSecret, config.OauthRedirect)
 }
 
 func TestAccessToken(t *testing.T) {
-	accessToken, err := twitch.Users.GetAccessToken("fdsa")
+	_, err := client.Users.GetAccessToken("fdsa")
 
-	if err != nil {
-		t.Errorf("Failed to get access token: %s", err)
-	} else {
-		t.Logf("access token is %s", accessToken)
+	if err == nil {
+		t.Errorf("Expected error, but got none")
 	}
 }
 
 func TestUserFollowedChannels(t *testing.T) {
-	userFollows, err := twitch.Users.GetFollowedChannelInfo("28456583", "52722790")
+	userFollows, err := client.Users.GetFollowedChannelInfo("28456583", "52722790")
 
 	if err != nil {
 		t.Errorf("Failed to get user follow info: %s", err)
 	}
 
-	if userFollows.Channel.Name != "sistersarah" {
+	if userFollows.Channel.Name != "toptsun" {
 		t.Errorf("Wrong channel returned: %s", userFollows.Channel.Name)
 	}
 }

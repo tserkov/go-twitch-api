@@ -100,13 +100,13 @@ func (c *TwitchClient) request(method, endpoint string, params url.Values, v int
 	}
 
 	defer res.Body.Close()
-/*
-	if endpoint == "user" {
-		robots, _ := ioutil.ReadAll(res.Body)
-		res.Body.Close()
-		fmt.Printf("%s", robots)
-	}
-*/
+
+	// if endpoint == "user" {
+	// 	robots, _ := ioutil.ReadAll(res.Body)
+	// 	res.Body.Close()
+	// 	fmt.Printf("%s", robots)
+	// }
+
 	decoder := json.NewDecoder(res.Body)
 
 	// Check if request was bad

@@ -11,7 +11,7 @@ type Channel struct {
 	Logo string `json:"logo"`
 	IsMature bool `json:"mature"`
 	Name string `json:"name"`
-	IsPartner string `json:"partner"`
+	IsPartner bool `json:"partner"`
 	ProfileBanner string `json:"profile_banner"`
 	ProfileBannerBackgroundColor string `json:"profile_banner_background_color"`
 	Status string `json:"status"`
