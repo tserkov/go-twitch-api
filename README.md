@@ -39,10 +39,13 @@ func main() {
 
 ### Users
 * GetAccessToken (authorizationCode _string_) _string_
-	- fasdf
+	- Exchanges an authorization code (which you somehow obtained from Twitch's OAuth flow) for an access token.
 * GetAuthenticated (accessToken _string_) _twitch.User_, _error_
+	- Gets the user associated with the provided access token.
 * GetByLogin (username _string_) _twitch.Users_, _error_
+	- Returns users matching the provided username/login. Useful for converting username/login to user id.
 * GetFollowedChannelInfo (followerId _string_, channelId _string_) _twitch.Follows_, _error_
+	- If the provided user id is following the provided channel id, returns the related follow info.
 
 ### Todo
 * Channels endpoints
