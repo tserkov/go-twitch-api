@@ -2,9 +2,9 @@
 
 [![Travis](https://img.shields.io/travis/tserkov/go-twitch-api.svg)]()
 [![GitHub issues](https://img.shields.io/github/issues/tserkov/go-twitch-api.svg)]()
-[![Code Climate](https://img.shields.io/codeclimate/coverage/github/tserkov/go-twitch-api.svg)]()
+[![Coveralls](https://img.shields.io/coveralls/tserkov/go-twitch-api.svg)]()
 [![license](https://img.shields.io/github/license/tserkov/go-twitch-api.svg)]()
-[![Beerpay](https://img.shields.io/beerpay/tserkov/go-twitch-api.svg)]()
+[![Beerpay](https://img.shields.io/beerpay/tserkov/go-twitch-api.svg)](https://beerpay.io/tserkov/go-twitch-api)
 
 This is a Go wrapper for the [Twitch.tv Kraken API](https://dev.twitch.tv/docs), initially created for an internal project, but am making public as I build it out to our requirements.
 
