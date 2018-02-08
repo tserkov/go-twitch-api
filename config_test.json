@@ -1,5 +1,6 @@
 {
-	"ClientId": "elnu6bznkrwx5oq7fr0q7ehx1mal3h",
-	"ClientSecret": "",
-	"OauthRedirect": ""
+	"ClientId": "liqxdi28nbjot7ie6jlithxiblrf66",
+	"ClientSecret": "6wavrdugs0iwh1fltumdjuqd77qv2b",
+	"OauthRedirect": "https://github.com/tserkov/go-twitch-api",
+	"AccessToken": "89ung9u4i8tu0uhbpstq227z01tje8"
 }

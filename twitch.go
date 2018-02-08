@@ -1,13 +1,13 @@
 package twitch
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
-
-	//"io/ioutil"
+	"strings"
 )
 
 const (
@@ -17,34 +17,34 @@ const (
 )
 
 type TwitchClient struct {
-	httpClient    *http.Client
+	httpClient *http.Client
 
-	baseUrl       *url.URL
+	baseUrl *url.URL
 
 	clientId      string
 	clientSecret  string
 	oauthRedirect string
 
-	accessToken   string
+	accessToken string
 
-//	Channels   *ChannelsService
-//	Chat       *ChatService
-//	Games      *GamesService
-//	Ingests    *IngestsService
-//	Search     *SearchService
-//	Streams    *StreamsService
-//	Teams      *TeamsService
-	Users      *UsersService
-//	Videos     *VideosService
+	Channels *ChannelsService
+	//	Chat       *ChatService
+	//	Games      *GamesService
+	//	Ingests    *IngestsService
+	//	Search     *SearchService
+	//	Streams    *StreamsService
+	//	Teams      *TeamsService
+	Users *UsersService
+	//	Videos     *VideosService
 }
 
 type TwitchError struct {
-	Error string `json:"error"`
-	Status int `json:"status"`
+	Error   string `json:"error"`
+	Status  int    `json:"status"`
 	Message string `json:"message"`
 }
 
-func NewClient(clientId, clientSecret, oauthRedirect string) (*TwitchClient) {
+func NewClient(clientId, clientSecret, oauthRedirect string) *TwitchClient {
 	baseUrl, _ := url.Parse("https://api.twitch.tv/kraken/")
 
 	c := &TwitchClient{
@@ -55,31 +55,35 @@ func NewClient(clientId, clientSecret, oauthRedirect string) (*TwitchClient) {
 		oauthRedirect: oauthRedirect,
 	}
 
-//	c.Channels = &ChannelsService{client: c}
-//	c.Chat = &ChatService{client: c}
-//	c.Games = &GamesService{client: c}
-//	c.Ingests = &IngestsService{client: c}
-//	c.Search = &SearchService{client: c}
-//	c.Streams = &StreamsService{client: c}
-//	c.Teams = &TeamsService{client: c}
+	c.Channels = &ChannelsService{client: c}
+	//	c.Chat = &ChatService{client: c}
+	//	c.Games = &GamesService{client: c}
+	//	c.Ingests = &IngestsService{client: c}
+	//	c.Search = &SearchService{client: c}
+	//	c.Streams = &StreamsService{client: c}
+	//	c.Teams = &TeamsService{client: c}
 	c.Users = &UsersService{client: c}
-//	c.Videos = &VideosService{client: c}
+	//	c.Videos = &VideosService{client: c}
 
 	return c
 }
 
-func (c *TwitchClient) setAccessToken (code string) {
+func (c *TwitchClient) setAccessToken(code string) {
 	c.accessToken = fmt.Sprintf("OAuth %s", code)
 }
 
-func (c *TwitchClient) createRequest(method, endpoint string, params url.Values) *http.Request {
+func (c *TwitchClient) createRequest(method, endpoint string, params url.Values, body io.Reader) *http.Request {
 	url := fmt.Sprintf("https://%s/%s/%s", twitchHost, twitchPath, endpoint)
 
-	r, _ := http.NewRequest(method, url, nil)
+	r, _ := http.NewRequest(method, url, body)
 
-	r.URL.RawQuery = params.Encode()
+	if params != nil {
+		r.URL.RawQuery = params.Encode()
+	}
+
 	r.Header.Set("Accept", acceptHeader)
 	r.Header.Set("Client-ID", c.clientId)
+	r.Header.Set("Content-Type", "application/json")
 
 	if c.accessToken != "" {
 		r.Header.Set("Authorization", c.accessToken)
@@ -88,9 +92,14 @@ func (c *TwitchClient) createRequest(method, endpoint string, params url.Values)
 	return r
 }
 
-func (c *TwitchClient) request(method, endpoint string, params url.Values, v interface{}) error {
+func (c *TwitchClient) request(method, endpoint string, params url.Values, body string, v interface{}) error {
 	// Create the request
-	req := c.createRequest(method, endpoint, params)
+	req := c.createRequest(
+		method,
+		endpoint,
+		params,
+		strings.NewReader(body),
+	)
 
 	// Perform the request
 	res, err := c.httpClient.Do(req)
@@ -100,12 +109,6 @@ func (c *TwitchClient) request(method, endpoint string, params url.Values, v int
 	}
 
 	defer res.Body.Close()
-
-	// if endpoint == "user" {
-	// 	robots, _ := ioutil.ReadAll(res.Body)
-	// 	res.Body.Close()
-	// 	fmt.Printf("%s", robots)
-	// }
 
 	decoder := json.NewDecoder(res.Body)
 
@@ -121,7 +124,7 @@ func (c *TwitchClient) request(method, endpoint string, params url.Values, v int
 	err = decoder.Decode(v)
 
 	if err != nil {
-		return errors.New("invalid_response")
+		return err
 	}
 
 	return nil

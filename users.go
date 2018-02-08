@@ -3,12 +3,13 @@ package twitch
 import (
 	"fmt"
 	"net/url"
+	"time"
 )
 
 type TokenResponse struct {
-	AccessToken string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	Scope []string `json:"scope"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	Scope        []string `json:"scope"`
 }
 
 type UsersService struct {
@@ -16,41 +17,46 @@ type UsersService struct {
 }
 
 type User struct {
-	Id string `json:"_id"`
-	Name string `json:"name"`
-	DisplayName string `json:"display_name"`
-	Email string `json:"email"`
-	IsEmailVerified bool `json:"email_verified"`
-	Logo string `json:"logo"`
-	Bio string `json:"bio"`
-	IsPartnered bool `json:"partnered"`
-	IsTwitterConnected bool `json:"twitter_connected"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID                 string    `json:"_id"`
+	Name               string    `json:"name"`
+	DisplayName        string    `json:"display_name"`
+	Email              string    `json:"email"`
+	IsEmailVerified    bool      `json:"email_verified"`
+	Logo               string    `json:"logo"`
+	Bio                string    `json:"bio"`
+	IsPartnered        bool      `json:"partnered"`
+	IsTwitterConnected bool      `json:"twitter_connected"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 type Users struct {
-	Total int `json:"_total"`
+	Total int    `json:"_total"`
 	Users []User `json:"users"`
 }
 
 type Follows struct {
-	CreatedAt string `json:"created_id"`
-	Notifications bool `json:"notifications"`
-	Channel Channel
+	CreatedAt     time.Time `json:"created_id"`
+	Notifications bool      `json:"notifications"`
+	Channel       Channel
 }
 
-func (u *UsersService) GetAccessToken (code string) (string, error) {
-	p := url.Values{}
-	p.Set("grant_type", "authorization_code")
-	p.Set("client_id", u.client.clientId)
-	p.Set("client_secret", u.client.clientSecret)
-	p.Set("redirect_uri", u.client.oauthRedirect)
-	p.Set("code", code)
-
+func (u *UsersService) GetAccessToken(code string) (string, error) {
 	var tokenResponse TokenResponse
 
-	err := u.client.request("POST", "oauth2/token", p, &tokenResponse)
+	err := u.client.request(
+		"POST",
+		"oauth2/token",
+		url.Values{
+			"grant_type":    []string{"authorization_code"},
+			"clientId":      []string{u.client.clientId},
+			"clientSecret":  []string{u.client.clientSecret},
+			"oauthRedirect": []string{u.client.oauthRedirect},
+			"code":          []string{code},
+		},
+		"",
+		&tokenResponse,
+	)
 
 	if err != nil {
 		return "", err
@@ -59,8 +65,10 @@ func (u *UsersService) GetAccessToken (code string) (string, error) {
 	return tokenResponse.AccessToken, nil
 }
 
-func (u *UsersService) GetAuthenticated (accessToken string) (User, error) {
-	var userResponse User
+// Gets a user object based on the OAuth token provided.
+// Required scopes: user_read
+func (u *UsersService) GetUser(accessToken string) (User, error) {
+	var user User
 
 	u.client.setAccessToken(accessToken)
 
@@ -68,48 +76,74 @@ func (u *UsersService) GetAuthenticated (accessToken string) (User, error) {
 		"GET",
 		"user",
 		nil,
-		&userResponse,
+		"",
+		&user,
 	)
 
 	if err != nil {
 		return User{}, err
 	}
 
-	return userResponse, nil
+	return user, nil
 }
 
-func (u *UsersService) GetByLogin (username string) (Users, error) {
-	var usersResponse Users
+// Gets a specified user object.
+// Required scopes: none
+func (u *UsersService) GetUserByID(userID string) (User, error) {
+	var user User
+
+	err := u.client.request(
+		"GET",
+		fmt.Sprintf("users/%s", userID),
+		nil,
+		"",
+		&user,
+	)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}
+
+// Gets the user objects for the specified Twitch login names (up to 100).
+// If a specified user’s Twitch-registered email address is not verified, null is returned for that user.
+// Required scopes: none
+func (u *UsersService) GetUsers(usernames []string) (Users, error) {
+	var users Users
 
 	err := u.client.request(
 		"GET",
 		"users",
 		url.Values{
-			"login": []string{username},
+			"login": usernames,
 		},
-		&usersResponse,
+		"",
+		&users,
 	)
 
 	if err != nil {
 		return Users{}, err
 	}
 
-	return usersResponse, nil
+	return users, nil
 }
 
-func (u *UsersService) GetFollowedChannelInfo (followerId string, channelId string) (Follows, error) {
-	var followsResponse Follows
+func (u *UsersService) GetFollowedChannelInfo(followerId string, channelId string) (Follows, error) {
+	var follows Follows
 
 	err := u.client.request(
 		"GET",
 		fmt.Sprintf("users/%s/follows/channels/%s", followerId, channelId),
 		nil,
-		&followsResponse,
+		"",
+		&follows,
 	)
 
 	if err != nil {
 		return Follows{}, err
 	}
 
-	return followsResponse, nil
+	return follows, nil
 }
